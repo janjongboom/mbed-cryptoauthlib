@@ -1,0 +1,9 @@
+cryptoauthlib/app/
+cryptoauthlib/docs/
+cryptoauthlib/python/
+cryptoauthlib/third_party/
+cryptoauthlib/test/cmd-processor.c
+cryptoauthlib/lib/hal/hal_*
+cryptoauthlib/lib/hal/i2c_*
+cryptoauthlib/lib/hal/kit_*
+cryptoauthlib/lib/hal/swi_*

@@ -1,0 +1,4 @@
+{
+    "name": "cryptoauthlib",
+    "macros": ["ATCA_HAL_I2C"]
+}
