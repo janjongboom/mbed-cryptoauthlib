@@ -40,6 +40,7 @@ typedef struct {
 // Hold all active HAL structures
 static mbed_i2c_hal_data_t mbed_i2c_hal_data[ATAC_HAL_MBED_MAX_I2C];
 static bool mbed_i2c_hal_first_init = true;
+static I2C *mbed_i2c;
 
 void atca_delay_us(uint32_t delay) {
     // tr_debug("delay_us %lu", delay);
@@ -69,6 +70,7 @@ void atca_delay_ms(uint32_t delay) {
  */
 ATCA_STATUS hal_i2c_init(void *hal, ATCAIfaceCfg *cfg) {
     if (mbed_i2c_hal_first_init) {
+        mbed_i2c = new I2C(MBED_CONF_CRYPTOAUTHLIB_I2C_SDA, MBED_CONF_CRYPTOAUTHLIB_I2C_SCL);
         for (size_t ix = 0; ix < ATAC_HAL_MBED_MAX_I2C; ix++) {
             mbed_i2c_hal_data[ix].active = false;
         }
@@ -104,14 +106,10 @@ ATCA_STATUS hal_i2c_init(void *hal, ATCAIfaceCfg *cfg) {
     hal_data->rx_retries = cfg->rx_retries;
 
     // @todo, bus is ignored, and we only search primary bus. This needs to be fixed.
-    I2C *i2c = new I2C(I2C_SDA, I2C_SCL);
-    i2c->frequency(hal_data->baud);
-
-    hal_data->i2c = i2c;
+    mbed_i2c->frequency(hal_data->baud);
+    hal_data->i2c = mbed_i2c;
 
     ((ATCAHAL_t*)hal)->hal_data = hal_data;
-
-    // tr_debug("hal_i2c_init OK");
 
     return ATCA_SUCCESS;
 }
@@ -229,10 +227,10 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface) {
     char rx_buffer[4] = { 0 };
 
     // 4. Read from normal slave_address
+    r = -1;
     int retries = hal_data->rx_retries;
     while (--retries > 0 && r != 0) {
         r = hal_data->i2c->read(hal_data->slave_address, rx_buffer, 4);
-        // tr_debug("read returned %d (retryCount=%d)", r, retries);
     }
 
     // 5. Set frequency back to requested one
@@ -250,7 +248,6 @@ ATCA_STATUS hal_i2c_wake(ATCAIface iface) {
         return ATCA_STATUS_SELFTEST_ERROR;
     }
     tr_warn("wake failed");
-    tr_debug("wake response buffer is %02x %02x %02x %02x", rx_buffer[0], rx_buffer[1], rx_buffer[2], rx_buffer[3]);
     return ATCA_WAKE_FAILED;
 }
 
@@ -292,7 +289,7 @@ ATCA_STATUS hal_i2c_release(void *hal_data) {
     // tr_debug("hal_i2c_release");
 
     if (data->i2c) {
-        delete data->i2c;
+        // is now static, don't delete
     }
     data->active = false;
 

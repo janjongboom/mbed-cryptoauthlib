@@ -1,4 +1,14 @@
 {
     "name": "cryptoauthlib",
-    "macros": ["ATCA_HAL_I2C"]
+    "macros": ["ATCA_HAL_I2C"],
+    "config": {
+        "i2c_sda": {
+            "help": "I2C SDA pin to use",
+            "value": "I2C_SDA"
+        },
+        "i2c_scl": {
+            "help": "I2C SCL pin to use",
+            "value": "I2C_SCL"
+        }
+    }
 }
