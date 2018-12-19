@@ -9,6 +9,10 @@
         "i2c_scl": {
             "help": "I2C SCL pin to use",
             "value": "I2C_SCL"
+        },
+        "i2c_force_frequency": {
+            "help": "Force frequency on the I2C bus. Set to something different than 0 to override. E.g. the CRYPTOAUTH XPLAINED only works at 100 KHz",
+            "value": 0
         }
     }
 }

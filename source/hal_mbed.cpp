@@ -101,7 +101,12 @@ ATCA_STATUS hal_i2c_init(void *hal, ATCAIfaceCfg *cfg) {
     hal_data->active = true;
     hal_data->slave_address = cfg->atcai2c.slave_address;
     hal_data->bus = cfg->atcai2c.bus;
+    // the CryptoAuth Xplained Pro modules don't seem to work at 400Khz. Allow overriding.
+#if MBED_CONF_CRYPTOAUTHLIB_I2C_FORCE_FREQUENCY != 0
+    hal_data->baud = MBED_CONF_CRYPTOAUTHLIB_I2C_FORCE_FREQUENCY; // @todo: cfg->atcai2c.baud; <-- this does not work on a variety of boards
+#else
     hal_data->baud = cfg->atcai2c.baud;
+#endif
     hal_data->wake_delay = cfg->wake_delay;
     hal_data->rx_retries = cfg->rx_retries;
 
@@ -143,10 +148,10 @@ ATCA_STATUS hal_i2c_send(ATCAIface iface, uint8_t *txdata, int txlength) {
 
     int r = hal_data->i2c->write(hal_data->slave_address, (char*)txdata, txlength);
     // tr_debug("hal_i2c_send returned %d", r);
+
     if (r != 0) {
         return ATCA_TX_FAIL;
     }
-
     return ATCA_SUCCESS;
 }
 
@@ -196,7 +201,11 @@ ATCA_STATUS hal_i2c_receive(ATCAIface iface, uint8_t *rxdata, uint16_t *rxlength
     }
 
     // tr_debug("hal_i2c_receive, returned=%d (retryCount=%d)", r, retries);
-    // tr_debug("rx buffer is %02x %02x %02x %02x", rxdata[0], rxdata[1], rxdata[2], rxdata[3]);
+    // tr_debug("rx buffer is: ");
+    // for (size_t ix = 0; ix < bytesToRead; ix++) {
+    //     printf("%02x ", rxdata[ix]);
+    // }
+    // printf("\n");
 
     *rxlength = lengthPackage[0];
 
@@ -304,7 +313,7 @@ ATCA_STATUS hal_i2c_release(void *hal_data) {
  * \return ATCA_SUCCESS
  */
 ATCA_STATUS hal_i2c_discover_buses(int i2c_buses[], int max_buses) {
-    tr_debug("hal_i2c_discover_buses max_buses=%d", max_buses);
+    // tr_debug("hal_i2c_discover_buses max_buses=%d", max_buses);
     return ATCA_UNIMPLEMENTED;
 }
 
@@ -316,6 +325,6 @@ ATCA_STATUS hal_i2c_discover_buses(int i2c_buses[], int max_buses) {
  * \return ATCA_SUCCESS
  */
 ATCA_STATUS hal_i2c_discover_devices(int bus_num, ATCAIfaceCfg *cfg, int *found) {
-    tr_debug("hal_i2c_discover_devices bus_num=%d", bus_num);
+    // tr_debug("hal_i2c_discover_devices bus_num=%d", bus_num);
     return ATCA_UNIMPLEMENTED;
 }
